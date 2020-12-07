@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 500m
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "36000"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "36000"
+  name: verdaccio
+  namespace: verdaccio
+spec:
+  rules:
+  - host: npm.dev.example.com
+    http:
+      paths:
+      - backend:
+          serviceName: verdaccio
+          servicePort: 4873
+

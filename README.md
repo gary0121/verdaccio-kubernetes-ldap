@@ -1,0 +1,1 @@
+# verdaccio-kubernetes-ldap

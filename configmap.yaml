@@ -1,0 +1,91 @@
+apiVersion: v1
+data:
+  config.yaml: |
+    storage: /verdaccio/storage
+
+    max_body_size: 2000mb
+
+  web:
+    enable: true
+    title: Hose NPM Registry
+    gravatar: true
+    sort_packages: asc
+  
+  security:
+    legacy: false
+    api:
+      jwt:
+        sign:
+          expiresIn: 30d
+          notBefore: 0
+    web:
+      sign:
+        expiresIn: 7d
+        notBefore: 1
+
+    auth:
+      ldap:
+        type: ldap
+        cache:
+          # max credentials to cache (default to 100 if cache is enabled) 
+          size: 100
+          # cache expiration in seconds (default to 300 if cache is enabled) 
+          expire: 300
+        client_options:
+          url: "ldap://ldap.example.com:389"
+          # Only required if you need auth to bind
+          adminDn: "cn=readonly,dc=example,dc=com"
+          adminPassword: "readonly"
+          # Search base for users
+          searchBase: "ou=staff,dc=example,dc=com"
+          searchFilter: "(uid={{username}})"
+          # If you are using groups, this is also needed
+          groupDnProperty: 'cn'
+          groupSearchBase: 'cn=npm,ou=group,dc=example,dc=com'
+          # If you have memberOf support on your ldap
+          searchAttributes: ['*', 'memberOf']
+          # Else, if you don't (use one or the other):
+          # groupSearchFilter: '(memberUid={{dn}})'
+          # Optional
+          reconnect: true
+
+    # a list of other known repositories we can talk to
+    uplinks:
+      npmjs:
+        #url: https://registry.npmjs.org/
+        url: https://registry.npm.taobao.org/
+
+    packages:
+      '@scope/*':
+        # scoped packages
+        access: $all
+        publish: $authenticated
+        proxy: npmjs
+      '@*/*':
+        # scoped packages
+        access: $all
+        publish: $authenticated
+        proxy: npmjs
+      '**':
+        # allow all users (including non-authenticated users) to read and
+        # publish all packages
+        #
+        # you can specify usernames/groupnames (depending on your auth plugin)
+        # and three keywords: "$all", "$anonymous", "$authenticated"
+        access: $all
+
+        # allow all known users to publish packages
+        # (anyone can register by default, remember?)
+        publish: $authenticated
+
+        # if package is not available locally, proxy requests to 'npmjs' registry
+        proxy: npmjs
+
+    # log settings
+    logs:
+      - {type: stdout, format: pretty, level: http}
+      #- {type: file, path: verdaccio.log, level: info}
+kind: ConfigMap
+metadata:
+  name: verdaccio
+  namespace: verdaccio
